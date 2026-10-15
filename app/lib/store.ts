@@ -24,6 +24,9 @@ const KEY = "rsvp";
 const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
 const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
 
+/** Vercel дээр Redis холбоогүй бол хариу хадгалагдахгүй */
+export const storageMissing = () => !!process.env.VERCEL && !(url && token);
+
 async function redis(cmd: (string | number)[]) {
   const res = await fetch(url!, {
     method: "POST",

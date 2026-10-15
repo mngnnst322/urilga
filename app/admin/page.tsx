@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { getAll } from "../lib/store";
+import { getAll, storageMissing } from "../lib/store";
 import { isAdmin } from "../lib/auth";
 import { deleteRsvp, login, logout } from "./actions";
 
@@ -43,7 +43,7 @@ async function Admin({ searchParams }: { searchParams: PageProps<"/admin">["sear
     );
   }
 
-  const list = await getAll();
+  const list = storageMissing() ? [] : await getAll();
   const fmt = (iso: string) =>
     new Date(iso).toLocaleString("mn-MN", { timeZone: "Asia/Ulaanbaatar", dateStyle: "short", timeStyle: "short" });
 
@@ -56,6 +56,12 @@ async function Admin({ searchParams }: { searchParams: PageProps<"/admin">["sear
         </form>
       </div>
 
+      {storageMissing() && (
+        <p className="now-only">
+          ⚠️ Хадгалах сан холбогдоогүй тул хариу хадгалагдахгүй байна. Vercel → Storage → Upstash Redis нэмээд Redeploy
+          хийгээрэй.
+        </p>
+      )}
       {list.length === 0 && <p className="muted">Одоогоор хэн ч урилга нээгээгүй байна.</p>}
 
       {list.map((r) => (
