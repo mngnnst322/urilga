@@ -61,7 +61,7 @@ export default function Invitation() {
   const [time, setTime] = useState<string | null>(null);
   const [kind, setKind] = useState(false);
   const [period] = useState("🌇 орой");
-  const [onlyWarn, setOnlyWarn] = useState(0); // >0 бол "зөвхөн 8 цаг" анхааруулга
+  const [onlyWarn, setOnlyWarn] = useState(0); // >0 бол "зөвхөн 8:30" анхааруулга
   const [ride, setRide] = useState<string | null>(null);
 
   // screen 3
@@ -400,7 +400,7 @@ export default function Invitation() {
               ))}
             </div>
             {onlyWarn > 0 && (
-              <p key={onlyWarn} className="now-only">🕗 Зөвхөн 8 цаг сонгоно 😼</p>
+              <p key={onlyWarn} className="now-only">🕗 Зөвхөн 8:30 сонгоно 😼</p>
             )}
 
             <div className="label">💝 Ямар болзоо вэ?</div>
