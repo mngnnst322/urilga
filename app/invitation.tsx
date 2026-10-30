@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { CONFIG, type DateType } from "./config";
+import { Coupons, Fortune, HeartGame, Quiz, Talk } from "./games";
 
 const DOW = ["Ня", "Да", "Мя", "Лх", "Пү", "Ба", "Бя"];
 const DOW_FULL = ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"];
@@ -41,12 +42,59 @@ let uid = 0;
 
 const isLetter = CONFIG.mode === "letter";
 
+// Баглааны бөмбөгөр хэсэгт (300×340 хайрцаг) багтах n сарнайн байрлал, төвөөсөө гадагш дэлгэрнэ
+function bouquetPoints(n: number) {
+  let pts: [number, number][] = [];
+  for (let step = 40; step > 8; step -= 0.25) {
+    pts = [];
+    let row = 0;
+    for (let y = 8; y <= 200; y += step * 0.87, row++)
+      for (let x = 35 + (row % 2 ? step / 2 : 0); x <= 265; x += step)
+        if (Math.hypot(x - 150, y - 120) <= 115) pts.push([x, y]);
+    if (pts.length >= n) break;
+  }
+  return pts
+    .slice(0, n)
+    .sort((a, b) => Math.hypot(a[0] - 150, a[1] - 110) - Math.hypot(b[0] - 150, b[1] - 110))
+    .map(([x, y]) => ({ left: (x / 300) * 100, top: (y / 340) * 100 }));
+}
+const ROSE_PTS = bouquetPoints(CONFIG.letter.roses);
+const GARLAND = ["#ffb3c7", "#ffd59e", "#c9b6ff", "#a8e6cf", "#ffb3c7", "#ffd59e", "#c9b6ff", "#a8e6cf", "#ffb3c7", "#ffd59e", "#c9b6ff"];
+const HOME_SPARKS: [number, number, string][] = [[8, 12, "✨"], [88, 8, "💗"], [2, 62, "🌸"], [94, 58, "✨"], [50, -6, "💫"]];
+const FUTURE_STARS = [[8, 18], [22, 50], [35, 12], [52, 34], [68, 10], [80, 44], [92, 20], [14, 78], [88, 74]];
+const SPARKLES = [[6, 20], [92, 16], [3, 55], [96, 50], [20, 2], [80, 4]];
+
+// Захиа үг үгээрээ бичигдэнэ: үг бүрт дараалсан хоцролт (s)
+const WORD_STEP = 0.09;
+const PARA_PAUSE = 0.6; // догол мөр хооронд жаахан амсхийнэ
+const LETTER_WORDS = (() => {
+  let t = 0.6;
+  return [CONFIG.letter.to, ...CONFIG.letter.paragraphs].map((para, pi) => {
+    if (pi > 0) t += PARA_PAUSE;
+    const words = para.split(" ").filter(Boolean);
+    const heart = pi > 0 ? CONFIG.letter.hearts[pi - 1] : undefined;
+    if (heart) words.push(heart);
+    return words.map((w) => ({ w, d: (t += WORD_STEP) }));
+  });
+})();
+const LETTER_END = (LETTER_WORDS.at(-1)?.at(-1)?.d ?? 0) + 0.4;
+
 export default function Invitation() {
   const [screen, setScreen] = useState(0);
   const [envOpen, setEnvOpen] = useState(false);
   const [name, setName] = useState("");
   const [nameWarn, setNameWarn] = useState(false);
   const [read, setRead] = useState(false);
+  const [reply, setReply] = useState("");
+  const [sending, setSending] = useState(false);
+  const [skipWrite, setSkipWrite] = useState(false);
+  const [future, setFuture] = useState("");
+  const [futureSending, setFutureSending] = useState(false);
+  const [futureSent, setFutureSent] = useState(false);
+  const [hugBack, setHugBack] = useState(false);
+  const seenFortunes = useRef<string[]>([]);
+  const usedCoupons = useRef<string[]>([]);
+  const [bloomed, setBloomed] = useState(0);
   const [toastText, setToastText] = useState("");
   const [toastOn, setToastOn] = useState(false);
   const [floats, setFloats] = useState<Floater[]>([]);
@@ -104,6 +152,23 @@ export default function Invitation() {
     };
   }, [screen]);
 
+  /* Баглааны сарнай тоолуур (сарнай дэлбээлэх хурдтай ижил) */
+  useEffect(() => {
+    if (screen !== 11) return;
+    let n = 0;
+    let iv: ReturnType<typeof setInterval> | undefined;
+    const start = setTimeout(() => {
+      iv = setInterval(() => {
+        setBloomed(++n);
+        if (n >= CONFIG.letter.roses) clearInterval(iv);
+      }, 30);
+    }, 300);
+    return () => {
+      clearTimeout(start);
+      clearInterval(iv);
+    };
+  }, [screen]);
+
   /* floating hearts */
   useEffect(() => {
     const iv = setInterval(() => {
@@ -146,7 +211,10 @@ export default function Invitation() {
     }
     track({ name: n, step: isLetter ? "Захиа нээсэн" : "Дугтуй нээсэн" });
     setEnvOpen(true);
-    setTimeout(() => go(CONFIG.mode === "letter" ? 10 : 1), 700);
+    setTimeout(() => {
+      if (!isLetter) return go(1);
+      go(14);
+    }, 700);
   };
 
   /* 1: Тийм / Үгүй */
@@ -251,19 +319,22 @@ export default function Invitation() {
     a.click();
   };
 
-  const accept = (x: number, y: number) => {
-    track({ step: "Урилгыг зөвшөөрсөн 💐", accepted: true });
-    burst(x, y);
+  const rain = (emojis: string[]) =>
     setPetals(
       Array.from({ length: 16 }, (_, i) => ({
         id: ++uid,
-        e: PETALS[i % PETALS.length],
+        e: emojis[i % emojis.length],
         left: Math.random() * 100,
         dur: 6 + Math.random() * 5,
         delay: Math.random() * 6,
         size: 16 + Math.random() * 14,
       })),
     );
+
+  const accept = (x: number, y: number) => {
+    track({ step: "Урилгыг зөвшөөрсөн 💐", accepted: true });
+    burst(x, y);
+    rain(PETALS);
     setTimeout(() => go(5), 600);
   };
 
@@ -308,26 +379,105 @@ export default function Invitation() {
 
       {/* 0. Дугтуй */}
       {screen === 0 && (
-        <section className="screen">
-          <div className="env-wrap">
-            <div className={"envelope" + (envOpen ? " open" : "")} onClick={openEnv}>
-              <div className="env-body" />
-              <div className="flap" />
-              <div className="seal">💗</div>
+        <div className="garland" aria-hidden>
+          {GARLAND.map((c, i) => (
+            <span key={i} style={{ "--c": c, "--i": i } as CSSProperties} />
+          ))}
+        </div>
+      )}
+      {screen === 0 && (
+        <section className="screen home">
+
+          <div className="home-card">
+            <div className="home-glow" aria-hidden />
+            <div className="env-stage">
+              <span className="peek peek-l" aria-hidden>🧸</span>
+              <span className="peek peek-r" aria-hidden>🐰</span>
+              {HOME_SPARKS.map((p, i) => (
+                <span
+                  key={i}
+                  className="home-spark"
+                  aria-hidden
+                  style={{ left: p[0] + "%", top: p[1] + "%", animationDelay: i * 0.5 + "s" }}
+                >
+                  {p[2]}
+                </span>
+              ))}
+              <div className={"envelope cute" + (envOpen ? " open" : "")} onClick={openEnv}>
+                <div className="env-body" />
+                <div className="env-paper">{isLetter ? "💌" : "💗"}</div>
+                <div className="flap" />
+                <div className="seal">💗</div>
+                <div className="env-to">{name.trim() ? "To: " + name.trim() : "To: чамдаа"}</div>
+              </div>
             </div>
-            <div className="eyebrow">{isLetter ? "Нууц захиа ирлээ" : "Нууц урилга ирлээ"}</div>
-            <h1>{isLetter ? "Танд захиа иржээ" : "Танд урилга иржээ"}</h1>
-            <p className="muted">{isLetter ? "Дугтуйг нээгээд уншаарай." : "Дугтуйг нээгээд хариугаа өгөөрэй."}</p>
-            <input
-              className={"name-input" + (nameWarn ? " warn" : "")}
-              placeholder="Чиний нэр хэн бэ? ✍️"
-              value={name}
-              maxLength={40}
-              onChange={(e) => { setName(e.target.value); setNameWarn(false); }}
-              onKeyDown={(e) => e.key === "Enter" && openEnv()}
-            />
+
+            <p className="home-hand">{isLetter ? "Зөвхөн чамд зориулав…" : "Чамд нэг санал байна…"}</p>
+            <h1 className="home-title">{isLetter ? "Танд захиа иржээ" : "Танд урилга иржээ"}</h1>
+            <p className="home-sub">{isLetter ? "Тайван суугаад, дугтуйгаа нээгээрэй 🤍" : "Дугтуйг нээгээд хариугаа өгөөрэй 💗"}</p>
+
+            <label className={"to-line" + (nameWarn ? " warn" : "")}>
+              <span>To:</span>
+              <input
+                placeholder="нэрээ бичээрэй ✍️"
+                value={name}
+                maxLength={40}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setNameWarn(false);
+                }}
+                onKeyDown={(e) => e.key === "Enter" && openEnv()}
+              />
+            </label>
             {nameWarn && <p className="now-only">Эхлээд нэрээ бичээрэй 🥺</p>}
-            <button className="btn-pill" onClick={openEnv}>💌 Нээх</button>
+            <button className="btn-pill home-btn" onClick={openEnv}>
+              💌 Нээх
+            </button>
+            <p className="home-foot">♡ хайраар боож илгээв ♡</p>
+          </div>
+        </section>
+      )}
+
+      {/* 11. 99 сарнай */}
+      {screen === 11 && (
+        <section className="screen">
+          <Petals petals={petals} />
+          <div className="card">
+            <span className="buddy" aria-hidden>🧸</span>
+            <span className="ok-badge">🌹 ЧАМД ЗОРИУЛАВ</span>
+            <div className={"rose-bouquet" + (bloomed >= CONFIG.letter.roses ? " done" : "")}>
+              {SPARKLES.map((p, i) => (
+                <span key={i} className="rb-spark" style={{ left: p[0] + "%", top: p[1] + "%", animationDelay: i * 0.35 + "s" }}>
+                  ✨
+                </span>
+              ))}
+              <div className="rb-leaf rb-l1">🌿</div>
+              <div className="rb-leaf rb-l2">🌿</div>
+              <div className="rb-leaf rb-l3">🍃</div>
+              <div className="rb-leaf rb-l4">🍃</div>
+              {ROSE_PTS.map((p, i) => (
+                <span key={i} className="rb-rose" style={{ left: p.left + "%", top: p.top + "%", animationDelay: 0.3 + i * 0.03 + "s" }}>
+                  🌹
+                </span>
+              ))}
+              <div className="rb-wrap" />
+              <div className="rb-bow">🎀</div>
+              <div className="rb-tag">{name.trim()}-д 💗</div>
+            </div>
+            <h1 className="f-title rb-count">
+              <b>{bloomed}</b> сарнай
+            </h1>
+            <p className="f-sub">Нэг бүр нь чамайг бодсон нэг мөч 💗</p>
+            <button
+              className={"btn-pill rb-next" + (bloomed >= CONFIG.letter.roses ? " show" : "")}
+              onClick={() => {
+                track({ step: CONFIG.letter.roses + " сарнай авсан 🌹" });
+                go(10);
+                setTimeout(() => track({ step: "Захиа уншиж байна 📖" }), 4000);
+              }}
+            >
+              💌 Одоо захиагаа уншаарай
+            </button>
           </div>
         </section>
       )}
@@ -335,32 +485,231 @@ export default function Invitation() {
       {/* 10. Захиа */}
       {screen === 10 && (
         <section className="screen">
-          <div className="letter">
+          <div
+            className={"letter" + (skipWrite ? " instant" : "")}
+            onClick={() => setSkipWrite(true)}
+            title="Дарвал бүтнээрээ харагдана"
+          >
+            <span className="tape tape-l" aria-hidden />
+            <span className="tape tape-r" aria-hidden />
+            <span className="pressed" aria-hidden>🌸</span>
             <div className="letter-stamp">💌</div>
-            <p className="letter-to">{CONFIG.letter.to}</p>
-            {CONFIG.letter.paragraphs.map((t, i) => (
-              <p key={i} className="letter-p" style={{ animationDelay: 0.4 + i * 0.5 + "s" }}>
-                {t}
+            {LETTER_WORDS.map((words, i) => (
+              <p key={i} className={i === 0 ? "letter-to" : "letter-p2"}>
+                {words.map((x, j) => (
+                  <span key={j} className="w" style={{ animationDelay: x.d + "s" }}>
+                    {x.w}{" "}
+                  </span>
+                ))}
               </p>
             ))}
-            <p className="letter-sign" style={{ animationDelay: 0.4 + CONFIG.letter.paragraphs.length * 0.5 + "s" }}>
-              {CONFIG.letter.sign}
-            </p>
+            {CONFIG.letter.sign && (
+              <p className="letter-sign" style={{ animationDelay: LETTER_END + "s" }}>
+                {CONFIG.letter.sign}
+              </p>
+            )}
+            <div className="letter-seal" style={{ animationDelay: (skipWrite ? 0.3 : LETTER_END + 0.6) + "s" }}>
+              💗
+            </div>
           </div>
-          {read ? (
-            <p className="letter-thanks">💗 Уншсанд баярлалаа</p>
-          ) : (
-            <button
-              className="btn-pill letter-btn"
-              onClick={(e) => {
-                burst(e.clientX, e.clientY);
-                setRead(true);
-                track({ step: "Захиа уншсан 💗", heartSent: true });
-              }}
-            >
-              💗 Уншлаа
-            </button>
-          )}
+
+          <div className={"reply-zone" + (skipWrite ? " instant" : "")} style={{ animationDelay: LETTER_END + 1 + "s" }}>
+            {read ? (
+              <div className="reply-sent">
+                <div className="reply-sent-ico">💌</div>
+                <p className="letter-thanks">Хариу чинь очлоо. Баярлалаа 💗</p>
+                <div className="reply-note">{reply}</div>
+              </div>
+            ) : (
+              <div className={"reply" + (sending ? " sending" : "")}>
+                <div className="label">✍️ Хариу захиа бичих</div>
+                <textarea
+                  className="reply-box"
+                  aria-label="Хариу захиа"
+                  placeholder="Энд хариугаа бичээрэй…"
+                  value={reply}
+                  maxLength={2000}
+                  rows={5}
+                  onChange={(e) => setReply(e.target.value)}
+                />
+                <div className="reply-count">{reply.length} / 2000</div>
+                <button
+                  className="btn-pill letter-btn"
+                  disabled={!reply.trim() || sending}
+                  onClick={(e) => {
+                    burst(e.clientX, e.clientY);
+                    setSending(true);
+                    track({ step: "Хариу бичсэн 💌", reply: reply.trim(), heartSent: true });
+                    setTimeout(() => {
+                      setRead(true);
+                      setSending(false);
+                      go(12);
+                    }, 1100);
+                  }}
+                >
+                  💌 Хариугаа илгээх
+                </button>
+              </div>
+            )}
+          </div>
+          {read && <Petals petals={petals} />}
+        </section>
+      )}
+
+      {/* 12. Ирээдүй */}
+      {screen === 12 && (
+        <section className="screen">
+          {futureSent && <Petals petals={petals} />}
+          <div className="card future-card">
+            <div className="future-sky">
+              {FUTURE_STARS.map((p, i) => (
+                <span key={i} style={{ left: p[0] + "%", top: p[1] + "%", animationDelay: i * 0.4 + "s" }}>✦</span>
+              ))}
+              <div className="future-moon">🌙</div>
+              <div className="future-house">🏡</div>
+            </div>
+            <span className="ok-badge">💌 ХАРИУ ЧИНЬ ОЧЛОО</span>
+            {futureSent ? (
+              <div className="reply-sent">
+                <h1 className="f-title">Энэ ирээдүйг хамтдаа бүтээе 💗</h1>
+                <p className="f-sub">Бичсэн мөр бүрийг чинь хадгалж үлдээнэ</p>
+                <div className="reply-note">{future}</div>
+              </div>
+            ) : (
+              <div className={"reply" + (futureSending ? " sending" : "")}>
+                <h1 className="f-title future-title">Хамгийн аз жаргалтай ирээдүйн тухай бичээрэй ✨</h1>
+                <p className="f-sub">Бид хаана, юу хийж, ямар байгаа бол? Мөрөөдлөө чөлөөтэй бичээрэй.</p>
+                <textarea
+                  className="reply-box"
+                  aria-label="Аз жаргалтай ирээдүй"
+                  placeholder="10 жилийн дараа бид…"
+                  value={future}
+                  maxLength={2000}
+                  rows={6}
+                  onChange={(e) => setFuture(e.target.value)}
+                />
+                <div className="reply-count">{future.length} / 2000</div>
+                <button
+                  className="btn-pill letter-btn"
+                  disabled={!future.trim() || futureSending}
+                  onClick={(e) => {
+                    burst(e.clientX, e.clientY);
+                    setFutureSending(true);
+                    track({ step: "Ирээдүйн тухай бичсэн 🌠", future: future.trim() });
+                    setTimeout(() => {
+                      setFutureSent(true);
+                      setFutureSending(false);
+                      rain(["💗", "🤍", "💕", "✨"]);
+                      go(13);
+                    }, 1100);
+                  }}
+                >
+                  🌠 Илгээх
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* 13. Тэврэлт */}
+      {screen === 13 && (
+        <section className="screen">
+          <Petals petals={petals} />
+          <div className="card hug-card">
+            <span className="ok-badge">🫂 ЧАМД ТЭВРЭЛТ ИРЛЭЭ</span>
+            <div className={"hug" + (hugBack ? " back" : "")}>
+              <span className="hug-l">🧸</span>
+              <span className="hug-r">🧸</span>
+              <span className="hug-heart">💗</span>
+            </div>
+            <h1 className="f-title">Чамайг чанга тэвэрч байна</h1>
+            <p className="f-sub">Мөрөөдөл бүрийг чинь хамтдаа биелүүлье 💗</p>
+            {hugBack ? (
+              <>
+                <p className="letter-thanks">🫂 Тэврэлт чинь очлоо. Удахгүй уулзъя 💕</p>
+                <button className="btn-pill" onClick={() => go(15)}>
+                  🎁 Бас нэг гэнэтийн бэлэг →
+                </button>
+              </>
+            ) : (
+              <button
+                className="btn-pill"
+                onClick={(e) => {
+                  burst(e.clientX, e.clientY);
+                  setHugBack(true);
+                  track({ step: "Тэврэлт буцааж илгээсэн 🫂", hugBack: true });
+                }}
+              >
+                🫂 Би ч бас тэвэрье
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* 14. Зүрх барих */}
+      {screen === 14 && (
+        <section className="screen">
+          <HeartGame
+            onTrap={toast}
+            onWin={() => {
+              track({ step: "💗 Зүрх барьж захиа нээсэн" });
+              rain(["🌹", "🌹", "🌸", "💗"]);
+              go(11);
+            }}
+          />
+        </section>
+      )}
+
+      {/* 15. Тест */}
+      {screen === 15 && (
+        <section className="screen">
+          <Quiz
+            onDone={(score, total) => {
+              track({ step: "❓ Тест бөглөсөн", quiz: `${score} / ${total}` });
+              go(16);
+            }}
+          />
+        </section>
+      )}
+
+      {/* 16. Азын жигнэрэг */}
+      {screen === 16 && (
+        <section className="screen">
+          <Fortune
+            onSeen={(t) => {
+              seenFortunes.current = [...seenFortunes.current, t];
+              track({ step: "🥠 Азын жигнэрэг хагалсан", fortunes: seenFortunes.current });
+            }}
+            onNext={() => {
+              rain(["🎟️", "💗", "✨", "🎀"]);
+              go(17);
+            }}
+          />
+        </section>
+      )}
+
+      {/* 17. Купон */}
+      {screen === 17 && (
+        <section className="screen">
+          <Petals petals={petals} />
+          <Coupons
+            onUse={(t) => {
+              usedCoupons.current = [...usedCoupons.current, t];
+              const n = usedCoupons.current.length;
+              toast(n >= CONFIG.games.couponPicks ? `🎉 ${CONFIG.games.couponPicks} купоноо сонголоо! Tiamo-д очлоо 💌` : `🎟️ Сонголоо! Дахиад ${CONFIG.games.couponPicks - n} үлдлээ`);
+              track({ step: "🎟️ Купон сонгосон", coupons: usedCoupons.current });
+            }}
+            onNext={() => go(18)}
+          />
+        </section>
+      )}
+
+      {/* 18. Ярилцах */}
+      {screen === 18 && (
+        <section className="screen">
+          <Talk onAnswer={(talkWhen) => track({ step: "☕ " + talkWhen, talkWhen })} />
         </section>
       )}
 
@@ -561,15 +910,7 @@ export default function Invitation() {
       {/* 5. Цэцэг */}
       {screen === 5 && booking && (
         <section className="screen">
-          {petals.map((p) => (
-            <div
-              key={p.id}
-              className="petal"
-              style={{ left: p.left + "vw", fontSize: p.size, animationDuration: p.dur + "s", animationDelay: p.delay + "s" }}
-            >
-              {p.e}
-            </div>
-          ))}
+          <Petals petals={petals} />
           <div className="card flower-card">
             <span className="ok-badge">💐 ЧАМД ЗОРИУЛСАН ЦЭЦЭГ</span>
             <div className="bouquet">
@@ -603,6 +944,18 @@ export default function Invitation() {
       <div className={"toast" + (toastOn ? " show" : "")}>{toastText}</div>
     </>
   );
+}
+
+function Petals({ petals }: { petals: Petal[] }) {
+  return petals.map((p) => (
+    <div
+      key={p.id}
+      className="petal"
+      style={{ left: p.left + "vw", fontSize: p.size, animationDuration: p.dur + "s", animationDelay: p.delay + "s" }}
+    >
+      {p.e}
+    </div>
+  ));
 }
 
 function Calendar({
