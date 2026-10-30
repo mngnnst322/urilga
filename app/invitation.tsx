@@ -39,11 +39,14 @@ type Booking = { start: Date; acts: DateType[]; time: string; ride: string; seat
 
 let uid = 0;
 
+const isLetter = CONFIG.mode === "letter";
+
 export default function Invitation() {
   const [screen, setScreen] = useState(0);
   const [envOpen, setEnvOpen] = useState(false);
   const [name, setName] = useState("");
   const [nameWarn, setNameWarn] = useState(false);
+  const [read, setRead] = useState(false);
   const [toastText, setToastText] = useState("");
   const [toastOn, setToastOn] = useState(false);
   const [floats, setFloats] = useState<Floater[]>([]);
@@ -141,9 +144,9 @@ export default function Invitation() {
       setNameWarn(true);
       return;
     }
-    track({ name: n, step: "Дугтуй нээсэн" });
+    track({ name: n, step: isLetter ? "Захиа нээсэн" : "Дугтуй нээсэн" });
     setEnvOpen(true);
-    setTimeout(() => go(1), 700);
+    setTimeout(() => go(CONFIG.mode === "letter" ? 10 : 1), 700);
   };
 
   /* 1: Тийм / Үгүй */
@@ -312,9 +315,9 @@ export default function Invitation() {
               <div className="flap" />
               <div className="seal">💗</div>
             </div>
-            <div className="eyebrow">Нууц урилга ирлээ</div>
-            <h1>Танд урилга иржээ</h1>
-            <p className="muted">Дугтуйг нээгээд хариугаа өгөөрэй.</p>
+            <div className="eyebrow">{isLetter ? "Нууц захиа ирлээ" : "Нууц урилга ирлээ"}</div>
+            <h1>{isLetter ? "Танд захиа иржээ" : "Танд урилга иржээ"}</h1>
+            <p className="muted">{isLetter ? "Дугтуйг нээгээд уншаарай." : "Дугтуйг нээгээд хариугаа өгөөрэй."}</p>
             <input
               className={"name-input" + (nameWarn ? " warn" : "")}
               placeholder="Чиний нэр хэн бэ? ✍️"
@@ -326,6 +329,38 @@ export default function Invitation() {
             {nameWarn && <p className="now-only">Эхлээд нэрээ бичээрэй 🥺</p>}
             <button className="btn-pill" onClick={openEnv}>💌 Нээх</button>
           </div>
+        </section>
+      )}
+
+      {/* 10. Захиа */}
+      {screen === 10 && (
+        <section className="screen">
+          <div className="letter">
+            <div className="letter-stamp">💌</div>
+            <p className="letter-to">{CONFIG.letter.to}</p>
+            {CONFIG.letter.paragraphs.map((t, i) => (
+              <p key={i} className="letter-p" style={{ animationDelay: 0.4 + i * 0.5 + "s" }}>
+                {t}
+              </p>
+            ))}
+            <p className="letter-sign" style={{ animationDelay: 0.4 + CONFIG.letter.paragraphs.length * 0.5 + "s" }}>
+              {CONFIG.letter.sign}
+            </p>
+          </div>
+          {read ? (
+            <p className="letter-thanks">💗 Уншсанд баярлалаа</p>
+          ) : (
+            <button
+              className="btn-pill letter-btn"
+              onClick={(e) => {
+                burst(e.clientX, e.clientY);
+                setRead(true);
+                track({ step: "Захиа уншсан 💗", heartSent: true });
+              }}
+            >
+              💗 Уншлаа
+            </button>
+          )}
         </section>
       )}
 

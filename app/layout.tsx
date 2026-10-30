@@ -1,9 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Comfortaa, Nunito } from "next/font/google";
+import { Caveat, Comfortaa, Nunito } from "next/font/google";
+import { CONFIG } from "./config";
 import "./globals.css";
 
 const comfortaa = Comfortaa({
   variable: "--font-comfortaa",
+  subsets: ["latin", "cyrillic"],
+  weight: ["500", "700"],
+});
+
+const caveat = Caveat({
+  variable: "--font-caveat",
   subsets: ["latin", "cyrillic"],
   weight: ["500", "700"],
 });
@@ -14,12 +21,14 @@ const nunito = Nunito({
   weight: ["500", "700", "800"],
 });
 
+const isLetter = CONFIG.mode === "letter";
+
 export const metadata: Metadata = {
-  title: "Танд урилга иржээ 💌",
-  description: "Дугтуйг нээгээд хариугаа өгөөрэй.",
+  title: isLetter ? "Танд захиа иржээ 💌" : "Танд урилга иржээ 💌",
+  description: isLetter ? "Дугтуйг нээгээд уншаарай." : "Дугтуйг нээгээд хариугаа өгөөрэй.",
   openGraph: {
-    title: "Танд нууц урилга иржээ 💌",
-    description: "Дугтуйг нээгээд хариугаа өгөөрэй.",
+    title: isLetter ? "Танд нууц захиа иржээ 💌" : "Танд нууц урилга иржээ 💌",
+    description: isLetter ? "Дугтуйг нээгээд уншаарай." : "Дугтуйг нээгээд хариугаа өгөөрэй.",
   },
 };
 
@@ -31,7 +40,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="mn" className={`${comfortaa.variable} ${nunito.variable}`}>
+    <html lang="mn" className={`${comfortaa.variable} ${nunito.variable} ${caveat.variable}`}>
       <body>{children}</body>
     </html>
   );
