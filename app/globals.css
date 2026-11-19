@@ -475,7 +475,7 @@ body::after{bottom:-25vmax;right:-20vmax;background:radial-gradient(circle,#e5d6
 .letter.poem .letter-seal{margin:10px auto 0}
 
 /* 🌸 full-screen flower field */
-.flower-field{position:fixed;inset:0;z-index:40;overflow:hidden;pointer-events:none;
+.flower-field{position:fixed;inset:0;z-index:40;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;
   background:radial-gradient(circle at 50% 50%,#fff3f7 0%,#ffe1ec 60%,#f6d9f3 100%);animation:fadeIn .6s ease}
 .flower-field span{position:absolute;line-height:1;transform:translate(-50%,-50%) rotate(var(--r)) scale(0);
   filter:drop-shadow(0 4px 6px rgba(200,80,120,.18));
@@ -490,3 +490,7 @@ body::after{bottom:-25vmax;right:-20vmax;background:radial-gradient(circle,#e5d6
 .finale-line{font-family:var(--font-caveat),cursive;font-weight:700;font-size:clamp(24px,6.6vw,34px);line-height:1.25;color:#6b3550}
 .finale-name{margin-top:8px;font-family:var(--font-caveat),cursive;font-weight:700;font-size:clamp(38px,11vw,56px);line-height:1.1;
   color:#e0457b;text-shadow:0 2px 0 #fff}
+/* хуруугаар түлхэх: зөөлөн гарч, тавихад хэлбэлзэн буцна */
+.flower-field .bloom{transition:translate .9s cubic-bezier(.25,1.9,.45,.8)}
+.flower-field .bloom.pushed{transition:translate .22s ease-out}
+.finale{pointer-events:none}

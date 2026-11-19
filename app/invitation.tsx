@@ -722,28 +722,7 @@ export default function Invitation() {
       )}
 
       {/* 18. Дэлгэц дүүрэн цэцэг */}
-      {screen === 18 && (
-        <div className="flower-field" aria-hidden>
-          {field.map((f, i) => (
-            <span
-              key={i}
-              style={{
-                left: f.x + "px",
-                top: f.y + "px",
-                fontSize: f.size + "px",
-                animationDelay: f.delay + "s",
-                "--r": f.rot + "deg",
-              } as CSSProperties}
-            >
-              {f.e}
-            </span>
-          ))}
-          <div className="finale">
-            <p className="finale-line">{CONFIG.finale.line}</p>
-            <p className="finale-name">{CONFIG.finale.name} 💗</p>
-          </div>
-        </div>
-      )}
+      {screen === 18 && <FlowerField field={field} />}
 
       {/* 1. Асуулт */}
       {screen === 1 && (
@@ -975,6 +954,70 @@ export default function Invitation() {
 
       <div className={"toast" + (toastOn ? " show" : "")}>{toastText}</div>
     </>
+  );
+}
+
+/* Хуруугаар хүрэхэд цэцгүүд хоёр тийш түлхэгдэж зай гаргаад, тавихад найгасаар буцна */
+function FlowerField({ field }: { field: Bloom[] }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const R = 110; // хүрэлцэх радиус (px)
+  const PUSH = 80; // хамгийн их түлхэлт (px)
+
+  const push = (x: number, y: number) => {
+    const spans = ref.current?.querySelectorAll<HTMLSpanElement>(".bloom");
+    spans?.forEach((el, i) => {
+      const f = field[i];
+      const dx = f.x - x;
+      const dy = f.y - y;
+      const d = Math.hypot(dx, dy) || 1;
+      if (d < R) {
+        const k = ((R - d) / R) * PUSH;
+        el.style.translate = `${(dx / d) * k}px ${(dy / d) * k}px`;
+        el.classList.add("pushed");
+      } else if (el.classList.contains("pushed")) {
+        el.style.translate = "";
+        el.classList.remove("pushed");
+      }
+    });
+  };
+  const release = () => {
+    ref.current?.querySelectorAll<HTMLSpanElement>(".bloom.pushed").forEach((el) => {
+      el.style.translate = "";
+      el.classList.remove("pushed");
+    });
+  };
+
+  return (
+    <div
+      ref={ref}
+      className="flower-field"
+      onPointerDown={(e) => push(e.clientX, e.clientY)}
+      onPointerMove={(e) => (e.buttons || e.pointerType !== "mouse") && push(e.clientX, e.clientY)}
+      onPointerUp={release}
+      onPointerLeave={release}
+      onPointerCancel={release}
+    >
+      {field.map((f, i) => (
+        <span
+          key={i}
+          className="bloom"
+          aria-hidden
+          style={{
+            left: f.x + "px",
+            top: f.y + "px",
+            fontSize: f.size + "px",
+            animationDelay: f.delay + "s",
+            "--r": f.rot + "deg",
+          } as CSSProperties}
+        >
+          {f.e}
+        </span>
+      ))}
+      <div className="finale">
+        <p className="finale-line">{CONFIG.finale.line}</p>
+        <p className="finale-name">{CONFIG.finale.name} 💗</p>
+      </div>
+    </div>
   );
 }
 
