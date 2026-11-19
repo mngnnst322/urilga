@@ -709,7 +709,7 @@ export default function Invitation() {
             onUse={(t) => {
               usedCoupons.current = [...usedCoupons.current, t];
               const n = usedCoupons.current.length;
-              toast(n >= CONFIG.games.couponPicks ? `🎉 ${CONFIG.games.couponPicks} купоноо сонголоо! Tiamo-д очлоо 💌` : `🎟️ Сонголоо! Дахиад ${CONFIG.games.couponPicks - n} үлдлээ`);
+              toast(n >= CONFIG.games.couponPicks ? `🎉 ${CONFIG.games.couponPicks} купоноо сонголоо! Мянгаад очлоо 💌` : `🎟️ Сонголоо! Дахиад ${CONFIG.games.couponPicks - n} үлдлээ`);
               track({ step: "🎟️ Купон сонгосон", coupons: usedCoupons.current });
             }}
             onNext={() => {

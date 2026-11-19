@@ -185,7 +185,7 @@ export function Coupons({ onUse, onNext }: { onUse: (t: string) => void; onNext:
           Сүүлийн нэг зүйл… →
         </button>
       ) : (
-        <p className="foot">Сонгосон купон чинь Tiamo-д очно 💌</p>
+        <p className="foot">Сонгосон купон чинь Мянгаад очно 💌</p>
       )}
     </div>
   );
