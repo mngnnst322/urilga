@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CONFIG } from "./config";
 
 const G = CONFIG.games;
@@ -32,6 +32,17 @@ export function HeartGame({ onWin, onTrap }: { onWin: () => void; onTrap: (say: 
       ]);
     }, 520);
     return () => clearInterval(iv);
+  }, [won]);
+
+  // Хангалттай зүрх бармагц шууд дараагийн хуудас руу
+  const onWinRef = useRef(onWin);
+  useEffect(() => {
+    onWinRef.current = onWin;
+  });
+  useEffect(() => {
+    if (!won) return;
+    const t = setTimeout(() => onWinRef.current(), 600);
+    return () => clearTimeout(t);
   }, [won]);
 
   const catchDrop = (d: Drop) => {
@@ -71,93 +82,7 @@ export function HeartGame({ onWin, onTrap }: { onWin: () => void; onTrap: (say: 
             {d.e}
           </button>
         ))}
-        {won && (
-          <div className="game-win">
-            <div className="game-win-ico">🔓💌</div>
-            <p>Захиа нээгдлээ!</p>
-            <button className="btn-pill" onClick={onWin}>
-              Цааш нь →
-            </button>
-          </div>
-        )}
       </div>
-    </div>
-  );
-}
-
-/* ❓ Бидний тухай тест. Анхны оролдлогоор зөв хариулсныг тоолно. */
-export function Quiz({ onDone }: { onDone: (score: number, total: number) => void }) {
-  const [i, setI] = useState(0);
-  const [score, setScore] = useState(0);
-  const [missed, setMissed] = useState(false);
-  const [msg, setMsg] = useState<{ t: string; ok: boolean; k: number } | null>(null);
-  const [locked, setLocked] = useState(false);
-  const [msgKey, setMsgKey] = useState(0);
-  const done = i >= G.quiz.length;
-  const q = G.quiz[Math.min(i, G.quiz.length - 1)];
-
-  const pick = (o: number) => {
-    if (locked) return;
-    if (o === q.answer) {
-      if (!missed) setScore((n) => n + 1);
-      setMsg({ t: "Зөв! 💗", ok: true, k: msgKey + 1 });
-      setMsgKey((k) => k + 1);
-      setLocked(true);
-      setTimeout(() => {
-        setI((n) => n + 1);
-        setMissed(false);
-        setMsg(null);
-        setLocked(false);
-      }, 900);
-    } else {
-      setMissed(true);
-      // wrong[] нь зөв хариултыг алгасаад бусад сонголтын дарааллаар
-      const t = q.wrong[o < q.answer ? o : o - 1] ?? "Үгүй ээ 😝";
-      setMsg({ t, ok: false, k: msgKey + 1 });
-      setMsgKey((k) => k + 1);
-    }
-  };
-
-  const total = G.quiz.length;
-  const verdict =
-    score === total ? "Чи намайг надаас илүү мэддэг юм биш биз 😳💗" : score >= total / 2 ? "Муугүй шүү! 😎" : "Хмм... уулзаад дахиад шалгая 😂";
-
-  return (
-    <div className="card quiz-card">
-      <span className="buddy" aria-hidden>🐻</span>
-      <span className="ok-badge">❓ БИДНИЙ ТУХАЙ ТЕСТ</span>
-      {done ? (
-        <div className="quiz-done">
-          <div className="quiz-score">
-            {score} / {total}
-          </div>
-          <p className="f-sub">{verdict}</p>
-          <button className="btn-pill" onClick={() => onDone(score, total)}>
-            Дараагийн гэнэтийн бэлэг →
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="quiz-steps">
-            {G.quiz.map((_, n) => (
-              <span key={n} className={n < i ? "on" : n === i ? "cur" : ""} />
-            ))}
-          </div>
-          <h1 className="f-title quiz-q">{q.q}</h1>
-          <div className="quiz-opts">
-            {q.options.map((o, n) => (
-              <button key={n} className="chip quiz-opt" onClick={() => pick(n)}>
-                {o}
-              </button>
-            ))}
-          </div>
-          {msg && (
-            <p key={msg.k} className={"quiz-msg" + (msg.ok ? " ok" : "")}>
-              {msg.t}
-            </p>
-          )}
-        </>
-      )}
     </div>
   );
 }
@@ -261,56 +186,6 @@ export function Coupons({ onUse, onNext }: { onUse: (t: string) => void; onNext:
         </button>
       ) : (
         <p className="foot">Сонгосон купон чинь Tiamo-д очно 💌</p>
-      )}
-    </div>
-  );
-}
-
-/* ☕ Ярилцах: хажуу хажууд сууж байхад утсаа тавиад ярилцахад урих тухтай хуудас. */
-export function Talk({ onAnswer }: { onAnswer: (answer: string) => void }) {
-  const T = CONFIG.talk;
-  const [answer, setAnswer] = useState<"ready" | "wait" | null>(null);
-
-  const choose = (a: "ready" | "wait") => {
-    setAnswer(a);
-    onAnswer(a === "ready" ? T.ready : T.wait);
-  };
-
-  return (
-    <div className={"card talk-card" + (answer === "ready" ? " dim" : "")}>
-      <span className="buddy" aria-hidden>🐈</span>
-      <div className="talk-scene" aria-hidden>
-        <span className="talk-steam">
-          <i />
-          <i />
-          <i />
-        </span>
-        <span className="talk-cup">☕</span>
-        <span className="talk-candle">🕯️</span>
-        <span className="talk-plant">🪴</span>
-      </div>
-
-      {answer === "ready" ? (
-        <div className="talk-done">
-          <div className="talk-two">🧑‍🤝‍🧑</div>
-          <h1 className="f-title">{T.readyDone}</h1>
-          <p className="talk-sign">— Tiamo</p>
-        </div>
-      ) : (
-        <>
-          <h1 className="f-title talk-title">{T.title}</h1>
-          <p className="talk-text">{answer === "wait" ? T.waitDone : T.text}</p>
-          <div className="talk-opts">
-            <button className="btn-pill talk-ready" onClick={() => choose("ready")}>
-              {T.ready}
-            </button>
-            {answer !== "wait" && (
-              <button className="btn-no" onClick={() => choose("wait")}>
-                {T.wait}
-              </button>
-            )}
-          </div>
-        </>
       )}
     </div>
   );

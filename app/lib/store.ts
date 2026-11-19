@@ -18,11 +18,8 @@ export type Rsvp = {
   reply?: string; // захианы хариу
   future?: string; // "аз жаргалтай ирээдүй"
   hugBack?: boolean; // тэврэлт буцааж илгээсэн
-  quiz?: string; // тестийн оноо, ж: "3 / 4"
   fortunes?: string[]; // хагалсан азын жигнэрэгүүд
   coupons?: string[]; // сонгосон купонууд
-  talkWhen?: string; // хэзээ ярилцах вэ
-  talkNote?: string; // ярихаас өмнө хэлсэн зүйл
   userAgent?: string;
 };
 

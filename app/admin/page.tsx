@@ -76,13 +76,6 @@ async function Admin({ searchParams }: { searchParams: PageProps<"/admin">["sear
               <p>{r.reply}</p>
             </div>
           )}
-          {r.talkWhen && (
-            <div className="rsvp-reply talk-admin">
-              <small>☕ Ярилцах</small>
-              <p>{r.talkWhen}</p>
-              {r.talkNote && <p>{r.talkNote}</p>}
-            </div>
-          )}
           {r.future && (
             <div className="rsvp-reply">
               <small>🌠 Аз жаргалтай ирээдүй</small>
@@ -100,8 +93,6 @@ async function Admin({ searchParams }: { searchParams: PageProps<"/admin">["sear
             <span>{r.noTries ? `${r.noTries} удаа оролдсон 😼` : "—"}</span>
             <small>Тэврэлт 🫂</small>
             <span>{r.hugBack ? "буцааж илгээсэн" : "—"}</span>
-            <small>Тест ❓</small>
-            <span>{r.quiz ?? "—"}</span>
             <small>Жигнэрэг 🥠</small>
             <span>{r.fortunes?.length ? r.fortunes.join(" · ") : "—"}</span>
             <small>Сонгосон купон 🎟️</small>

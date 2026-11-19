@@ -12,21 +12,19 @@ export const CONFIG = {
 
   // ====== ЗАХИА ======
   letter: {
-    // Захиа — үг үсэг нэмэлгүй, хасалгүй яг бичсэнээр нь
-    to: "Sainuu hairt mine",
+    // Шүлэг — үг үсэг нэмэлгүй, хасалгүй яг бичсэнээр нь (мөр бүр тусдаа)
+    poem: true, // true бол мөрүүд голлож, шүлэг шиг харагдана
+    to: "", // хоосон бол мэндчилгээ гарахгүй
     roses: 99, // захианаас өмнө өгөх сарнайн тоо
     paragraphs: [
-      "Ene zahidalig unshj baih muchid bid hoyr hmtdaa zeregtsd suuj bh bolno. Chi mine mash uzesgelntei hragdj bna . Chamaig harah tudiid l setgel mine taivshirch bn tsag hugatsaag yg ene uyedl bi zgsoomor bn a",
-      "Ene zahidal bidnii ireeedui ehlelch baij magadgu esvel tugsgul ch baij magadgui .Ymarch songolt hiisn bi huleen zuvshuurnu .bi zuvhun chmaiga az jargltai baigasa gj husej bn",
-      "Chi bol mni amidrliin hangiin une tsntei humuusiin neg .Chamtai uchirsnda bi uuriigu mash az hun gj bddg dtro bituuhende ih bayrlj yvdg . Bidnii hamtdaa unguruulsn horom much bur minii huvid hamgiin une tsenetei dursamjuud .Hunii amidrald jargal zovlon eeljilj irdeg .Ter buhniig hamt tuulah hun chi mine.",
-      "Ghdee bi chamaig mash ih gomdoosn bid hoyriin hoornd oilgoltsohgui zuil garahad bi chmtai yriltshiin ornd dtroo bodood ,chamaig nmg hairlaha bolij bga met mdrmjuud turd yriltsahiin ornd chimeegui bolj huleej etsest ni holdohiig sonsgsn thde ene buruu songolt gdgiig bi mash sn oilgj bn mnii buruu nmaig uuchlarai hairt mine",
-      "Bolisnoos hoish chmaiga martah gj mash ih hicheesen ghdee ygd ch chdhgu ym bn le udr bur oroi bur chmaig boddg shunuu zuudelj serd deere nortol uilj hvtdg . Ene hugtsnd bi olon zuiliig uhaarsn .Bodsn zuile nuuh bish shuud helj yriltsah ni her chuhal bolohiig gnts buruu oilgolt buh zuuliig suitgj chaddgiig oilgosn . Odoo bi iluu tuluvshun iluu uhaalag hun bolohiig hicheej baina .Ter uyed mine chi minii derged baigaasai gj husj bn",
-      "Bi anhnasa chmtai hmt amidrch az jargaltai ger bul bolno gj muruuddg baisn ene muruudul mine odooch hvrei baigaa shuu hair mine",
-      "Bi chmaas gants zuiliig guiy eniig unshj duussanii draa nadtai chine setgeleese yiltsaach. Bi ch bas chmaig sonsmoor baina ter uyed chinyu medrch yu bdoj baisniig oilgohiig husej baina ungursun zuile huleen zuvshuurch tsaashd hamt baih bolomj baigaa esehiig hmtda shiideye herev chi zuvshuurvul hiy biynde itgj umnuhusu iluu tegeer chmga oilgj snsj yriltsj hairlj hmgaalh bolno chi ymrch shiidver grgsn bi huleen zuvshuurnu",
+      "Инээмсэглэл чинь наддаа нар мэт дулаахан",
+      "Ирэх өдрүүдийн минь хамгийн сайхан мөрөөдөл чи",
+      "Сэтгэлд минь нуугдсан энэ л нандин үгийг",
+      "Сэмхэн шивнээд чамдаа хүргэе дээ.",
     ],
-    // Догол мөр бүрийн төгсгөлд бичигдэх зүрх (захианы үгэнд хүрэхгүй)
-    hearts: ["💗", "🤍", "💖", "🥺❤️‍🩹", "💞", "🏡💕", "❤️"],
-    sign: "Hundetgesn\nchinii hairt Tiamo", // хоосон бол гарын үсэг гарахгүй
+    // Мөр бүрийн төгсгөлд бичигдэх зүрх (хоосон бол юу ч нэмэхгүй)
+    hearts: [] as string[],
+    sign: "", // хоосон бол гарын үсэг гарахгүй
   },
 
   // ====== ТОГЛООМУУД ======
@@ -39,34 +37,6 @@ export const CONFIG = {
       { e: "💩", say: "Ёооё! Энийг яагаад барьсан юм 🤣" },
       { e: "🧦", say: "Tiamo-гийн угаагаагүй оймс 🧦 Зугт!" },
       { e: "📚", say: "Хичээлээ дараа хийнэ ээ 😂" },
-    ],
-
-    // ❓ Бидний тухай тест — асуултуудаа өөрөө солиорой
-    quiz: [
-      {
-        q: "Tiamo яг одоо чамд юу хэлмээр байгаа бол?",
-        options: ["Өлсөж байна 🍜", "Уучлаарай, чамайгаа их санаж байна 🥺", "Роналдо өчигдөр гоё тоглосон ⚽"],
-        answer: 1,
-        wrong: ["Өлссөн нь үнэн ч гэсэн... энэ биш ээ 😂", "Роналдо энд огт хамаагүй 😂"],
-      },
-      {
-        q: "Tiamo чамайг хэр их санадаг вэ?",
-        options: ["Бага зэрэг", "Өдөр бүр, орой бүр", "Огт үгүй"],
-        answer: 1,
-        wrong: ["Бага зэрэг гэнэ ээ? 😤 Дахиад бодоорой", "Худлаа! 🙅 Захиагаа дахиад уншаарай"],
-      },
-      {
-        q: "Хэрэлдвэл хэн түрүүлж уучлалт гуйх вэ?",
-        options: ["Чи", "Tiamo", "Манай муур"],
-        answer: 1,
-        wrong: ["Үгүй ээ, энэ удаад би 🥺", "Муур маань уучлалт гуйж мэдэхгүй 🐱"],
-      },
-      {
-        q: "Хамгийн гоё болзоо аль нь вэ?",
-        options: ["Түгжрэл дундах ярилцлага 🚗", "Гэртээ кино 🎬", "Хамтдаа байвал бүгд 💗"],
-        answer: 2,
-        wrong: ["Түгжрэл ч гэсэн гоё л доо 😂", "Кино гоё ч гэсэн... 🍿"],
-      },
     ],
 
     // 🥠 Азын жигнэрэг — дарах бүрт санамсаргүй нэгийг нь гаргана
@@ -92,14 +62,10 @@ export const CONFIG = {
     ],
   },
 
-  // ====== ЯРИЛЦАХ (хамгийн сүүлийн хуудас) — хажуу хажууд сууж байх үед ======
-  talk: {
-    title: "Одоо ярилцъя уу? 🤍",
-    text: "Би яг хажууд чинь сууж байна. Юу ч яаралгүй. Чи бэлэн болсон үедээ утсаа тавиад над руу хараарай. Би зөвхөн чамайг сонсож, ойлгохыг хүсэж байна.",
-    ready: "🤍 Бэлэн, ярилцъя",
-    wait: "🫖 Жаахан амсхийгээд",
-    readyDone: "Утсаа тавиад, хажуу тийшээ хараарай 🤍",
-    waitDone: "Зүгээр ээ. Хэдий хэрэгтэй ч хүлээнэ. Бэлэн болохоороо над руу хараарай 🤍",
+  // Хамгийн сүүлийн дэлгэц дүүрэн цэцгийн голд гарах бичиг
+  finale: {
+    line: "Зөвхөн чамдаа энэ сая сая их цэцгийг",
+    name: "Маралаа",
   },
 
   withText: "Tiamo-тай хамт", // баталгааны хуудсан дээр гарах

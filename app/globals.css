@@ -303,16 +303,6 @@ h1,h2{font-family:var(--display);font-weight:700;line-height:1.25}
 .game-win-ico{font-size:52px}
 .game-win p{font-family:var(--display);font-weight:700;font-size:20px;color:var(--pink)}
 
-.quiz-steps{display:flex;justify-content:center;gap:6px;margin:12px 0 4px}
-.quiz-steps span{width:26px;height:6px;border-radius:999px;background:var(--chip)}
-.quiz-steps span.on{background:var(--pink)}
-.quiz-steps span.cur{background:#f4b6c9}
-.quiz-opts{display:grid;gap:10px;margin-top:16px}
-.quiz-opt{font-size:15px;padding:15px 12px}
-.quiz-msg{margin-top:14px;font-weight:800;color:var(--pink);animation:shake .4s}
-.quiz-msg.ok{color:#2e9e62;animation:in .4s}
-.quiz-score{font-family:var(--display);font-size:56px;font-weight:700;color:var(--pink);margin:12px 0 4px}
-.quiz-done .btn-pill{margin-top:18px}
 
 .fortune-cookie{display:block;margin:26px auto 8px;font-size:110px;line-height:1;animation:wiggle 1.6s ease-in-out infinite}
 @keyframes wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-10deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-4deg)}}
@@ -464,13 +454,6 @@ body::after{bottom:-25vmax;right:-20vmax;background:radial-gradient(circle,#e5d6
 @keyframes cloud{to{left:110%}}
 .game-bar{background:#fbe8ef;box-shadow:inset 0 1px 3px rgba(180,90,130,.12)}
 
-/* quiz options as cute cards */
-.quiz-opt{position:relative;background:#fff;border:1.5px solid #f6dbe4;text-align:left;padding:15px 16px 15px 52px;
-  box-shadow:0 4px 12px rgba(180,90,130,.07)}
-.quiz-opt::before{content:counter(opt,upper-alpha);counter-increment:opt;position:absolute;left:14px;top:50%;transform:translateY(-50%);
-  width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#fff;background:linear-gradient(135deg,#ff8fb1,#b46be0)}
-.quiz-opts{counter-reset:opt}
-.quiz-opt:hover{border-color:#f29cb8}
 
 /* bouquet card glow */
 .rose-bouquet::before{content:"";position:absolute;inset:8% 4% 30%;border-radius:50%;
@@ -484,3 +467,26 @@ body::after{bottom:-25vmax;right:-20vmax;background:radial-gradient(circle,#e5d6
 .future-card::after,.talk-card.dim::after{display:none}
 .f-title{display:table;margin-left:auto !important;margin-right:auto !important}
 .talk-card{overflow:visible}
+
+/* poem */
+.letter.poem{text-align:center;padding:44px 22px 30px}
+.letter.poem .letter-p2{margin-bottom:6px;font-size:1.08em}
+.letter.poem .letter-sign{text-align:center;margin-top:22px}
+.letter.poem .letter-seal{margin:10px auto 0}
+
+/* 🌸 full-screen flower field */
+.flower-field{position:fixed;inset:0;z-index:40;overflow:hidden;pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,#fff3f7 0%,#ffe1ec 60%,#f6d9f3 100%);animation:fadeIn .6s ease}
+.flower-field span{position:absolute;line-height:1;transform:translate(-50%,-50%) rotate(var(--r)) scale(0);
+  filter:drop-shadow(0 4px 6px rgba(200,80,120,.18));
+  animation:fieldBloom .7s cubic-bezier(.3,1.6,.5,1) forwards,fieldSway 4s ease-in-out infinite}
+@keyframes fieldBloom{to{transform:translate(-50%,-50%) rotate(var(--r)) scale(1)}}
+@keyframes fieldSway{0%,100%{rotate:0deg}50%{rotate:6deg}}
+.finale{position:absolute;left:50%;top:50%;z-index:2;width:min(86vw,440px);padding:26px 22px;text-align:center;
+  transform:translate(-50%,-50%) scale(.9);opacity:0;border-radius:28px;
+  background:rgba(255,250,246,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 20px 50px rgba(200,80,120,.25);animation:finaleIn 1s cubic-bezier(.2,.8,.2,1) 3.2s forwards}
+@keyframes finaleIn{to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.finale-line{font-family:var(--font-caveat),cursive;font-weight:700;font-size:clamp(24px,6.6vw,34px);line-height:1.25;color:#6b3550}
+.finale-name{margin-top:8px;font-family:var(--font-caveat),cursive;font-weight:700;font-size:clamp(38px,11vw,56px);line-height:1.1;
+  color:#e0457b;text-shadow:0 2px 0 #fff}
