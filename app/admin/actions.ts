@@ -6,8 +6,9 @@ import { remove } from "../lib/store";
 import { isAdmin, tokenOf } from "../lib/auth";
 
 export async function login(formData: FormData) {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw || formData.get("password") !== pw) redirect("/admin?e=1");
+  // Vercel-д хадгалахад санамсаргүй орсон хоосон зай, шинэ мөрийг тооцохгүй
+  const pw = process.env.ADMIN_PASSWORD?.trim();
+  if (!pw || String(formData.get("password") ?? "").trim() !== pw) redirect("/admin?e=1");
   (await cookies()).set("admin", tokenOf(pw), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

@@ -4,7 +4,7 @@ import { createHash } from "crypto";
 export const tokenOf = (pw: string) => createHash("sha256").update("urilga:" + pw).digest("hex");
 
 export async function isAdmin() {
-  const pw = process.env.ADMIN_PASSWORD;
+  const pw = process.env.ADMIN_PASSWORD?.trim();
   if (!pw) return false;
   return (await cookies()).get("admin")?.value === tokenOf(pw);
 }
